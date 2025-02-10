@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Liste des membres du club{% endblock %}
+{% block content %}
+    <h1>Liste des membres du club</h1>
+    <ul>
+        {% for membre in membres %}
+            <li>
+                {{membre.nom}} {{membre.prenom}} ({{membre.surnom}})
+                <a href="{% url 'modifier_membre' membre.id %}">Modifier</a>
+                <a href="{% url 'supprimer_membre' membre.id %}">Supprimer</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'ajouter_membre' %}">Ajouter un membre</a>
+{% endblock %}

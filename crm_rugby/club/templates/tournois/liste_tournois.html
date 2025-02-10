@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Liste des tournois{% endblock %}
+{% block content %}
+    <h1>Liste des tournois</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Date de début</th>
+                <th>Date de fin</th>
+                <th>Lieu</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tournoi in tournois %}
+                <tr>
+                    <td>{{ tournoi.nom }}</td>
+                    <td>{{ tournoi.date_debut }}</td>
+                    <td>{{ tournoi.date_fin }}</td>
+                    <td>{{ tournoi.lieu }}</td>
+                    <td>
+                        <a href="{% url 'modifier_tournoi' tournoi.id %}">Modifier</a>
+                        <a href="{% url 'supprimer_tournoi' tournoi.id %}">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'ajouter_tournoi' %}">Ajouter un tournoi</a>
+{% endblock %}
