@@ -1,10 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}{% if sponsor %}Modifier{% else %}Ajouter{% endif %} un sponsor{% endblock %}
+{% block content %}
+    <h1>{% if sponsor %}Modifier{% else %}Ajouter{% endif %} un sponsor</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% for support in supports %}
+            <h3>{{ support.nom }}</h3>
+            <ul>
+                {% for emplacement in support.emplacements.all %}
+                    {% if emplacement in emplacements %}
+                        <li>
+                            <div class="checkbox-container">
+                                <input type="checkbox" name="emplacements" value="{{ emplacement.id }}">
+                                <label for="emplacement_{{ emplacement.id }}">{{ emplacement.numero }} ({{ emplacement.prix }} €)</label>
+                            </div>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% endfor %}
+
+        <button type="submit">Enregistrer</button>
+    </form>
+{% endblock %}

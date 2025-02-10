@@ -1,10 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+    {% load static %}
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pages.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+
+    <title>{% block title %}CRM Club de Rugby{% endblock %}</title>
+    {{ form.media }}
 </head>
 <body>
-$END$
+    <header>
+        <h1>CRM Club de Rugby</h1>
+        <nav>
+            <a href="{% url 'liste_sponsors' %}">Sponsors</a>
+            <a href="{% url 'liste_membres' %}">Membres</a>
+            <a href="{% url 'liste_equipes' %}">Équipes</a>
+            <a href="{% url 'liste_tournois' %}">Tournois</a>
+            <a href="{% url 'liste_matchs' %}">Matchs</a>
+            <a href="{% url 'liste_supports' %}">Supports</a>
+            <a href="{% url 'liste_emplacements' %}">Emplacements</a>
+
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>&copy; 2025 Rugby Lannion Perros - F.CARLUER</p>
+        {% if user.is_authenticated %}
+            <p>Bonjour, {{ user.username }} !</p>
+            <a href="{% url 'logout' %}">Se déconnecter</a>
+        {% else %}
+            <h2>Se connecter</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Se connecter</button>
+                {% if form.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </form>
+            <a href="{% url 'password_reset' %}">Mot de passe oublié ?</a>
+        {% endif %}
+    </footer>
 </body>
 </html>

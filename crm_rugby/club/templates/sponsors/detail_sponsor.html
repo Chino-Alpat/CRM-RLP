@@ -1,10 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}{{ sponsor.nom }}{% endblock %}
+{% block content %}
+    <div class="sponsor-details">
+        <div class="sponsor-header">
+            {% if sponsor.logo %}
+                <img src="{{ sponsor.logo.url }}" alt="Logo {{ sponsor.nom }}" width="100">
+            {% endif %}
+        </div>
+        <div class="sponsor-info">
+            <p>Description : {{ sponsor.description }}</p>
+            <p>contact : {{ sponsor.contact }} (tel: {{ sponsor.telephone }}, mail: {{ sponsor.email }})</p>
+            <p>Type de partenaria : {{ sponsor.type_partenariat }}</p>
+            <p>Montant de la contribution : {{ montant_contribution }} €</p>
+        </div>
+        <div class="sponsor-locations">
+            <h2>Emplacements :</h2>
+            <ul>
+                {% for emplacement in sponsor.emplacements.all %}
+                    <li>{{ emplacement.support }} - Emplacement {{ emplacement.numero }} ({{ emplacement.prix }} €)</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="sponsor-actions">
+            <a href="{% url 'modifier_sponsor' sponsor.id %}">Modifier</a>
+            <a href="{% url 'supprimer_sponsor' sponsor.id %}">Supprimer</a>
+        </div>
+    </div>
+{% endblock %}

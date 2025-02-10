@@ -1,5 +1,15 @@
 from django.db import models
 
+class SupportVisibilite(models.Model):
+    nom = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    nombre_emplacements = models.PositiveIntegerField(default=1)
+    def __str__(self):
+        return self.nom
+
+    @property
+    def prix(self):
+        return sum(emplacement.prix for emplacement in self.emplacements.all())
 
 class Sponsor(models.Model):
     nom = models.CharField(max_length=100)
@@ -14,12 +24,30 @@ class Sponsor(models.Model):
     def __str__(self):
         return self.nom
 
+
+class Emplacement(models.Model):
+    support = models.ForeignKey(SupportVisibilite, on_delete=models.CASCADE, related_name='emplacements')
+    numero = models.PositiveIntegerField()
+    sponsor = models.ForeignKey(Sponsor, on_delete=models.SET_NULL, blank=True, null=True, related_name='emplacements')
+    prix = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Prix de l'emplacement
+    duree_engagement = models.DecimalField(max_digits=2, decimal_places=0, blank=True, null=True, help_text="Durée de l'engagement en mois")
+    date_debut = models.DateField(blank=True, null=True, help_text="Date de début de l'engagement")
+    date_fin = models.DateField(blank=True, null=True, help_text="Date de fin de l'engagement")
+
+    class Meta:
+        unique_together = ('support', 'numero')
+
+    def __str__(self):
+        return f"Emplacement {self.numero} sur {self.support}"
+
+
 class Membre(models.Model):
+    username = models.CharField(max_length=100,blank=True, null=True)
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)
     surnom = models.CharField(max_length=100, blank=True, null=True)
     license = models.CharField(max_length=13, blank=True, null=True)
-    photo = models.ImageField(upload_to='photo_id/', blanck=True, null=True)
+    photo = models.ImageField(upload_to='photo_id/', blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     telephone = models.CharField(max_length=20, blank=True, null=True)
     date_naissance = models.DateField(blank=True, null=True)

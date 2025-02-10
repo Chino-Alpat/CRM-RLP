@@ -1,10 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Liste des équipes{% endblock %}
+{% block content %}
+    <h1>Liste des équipes</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Catégorie</th>
+                <th>Entraîneur</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for equipe in equipes %}
+                <tr>
+                    <td><a href="{% url 'detail_equipe' equipe.id %}">{{ equipe.nom }}</a></td>
+                    <td>{{ equipe.categorie }}</td>
+                    <td>{{ equipe.entraineur }}</td>
+                    <td>
+                        <a href="{% url 'modifier_equipe' equipe.id %}">Modifier</a>
+                        <a href="{% url 'supprimer_equipe' equipe.id %}">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'ajouter_equipe' %}">Ajouter une équipe</a>
+{% endblock %}

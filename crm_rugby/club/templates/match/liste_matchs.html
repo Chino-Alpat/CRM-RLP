@@ -1,10 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Liste des matchs{% endblock %}
+{% block content %}
+    <h1>Liste des matchs</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Équipe domicile</th>
+                <th>Équipe extérieure</th>
+                <th>Score</th>
+                <th>Tournoi</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for match in matchs %}
+                <tr>
+                    <td>{{ match.date }}</td>
+                    <td>{{ match.equipe_domicile }}</td>
+                    <td>{{ match.equipe_exterieur }}</td>
+                    <td>{{ match.score_domicile }} - {{ match.score_exterieur }}</td>
+                    <td>{{ match.tournoi }}</td>
+                    <td>
+                        <a href="{% url 'modifier_match' match.id %}">Modifier</a>
+                        <a href="{% url 'supprimer_match' match.id %}">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'ajouter_match' %}">Ajouter un match</a>
+{% endblock %}

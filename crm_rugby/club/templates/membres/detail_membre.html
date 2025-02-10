@@ -1,10 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}{{  membre.nom }}{% endblock %}
+{% block content %}
+<h1>{{ membre.nom }}</h1>
+
+<div class="membre-details">
+    <div class="membre-photo">
+        {% if membre.photo %}
+            <img src="{{ membre.photo.url }}" alt="Photo de {{ membre.nom }}" width="25%">
+        {% endif %}
+    </div>
+        <div class="membre-info">
+            <p><strong>Description :</strong> {{ membre.description }}</p>
+            <p><strong>Email :</strong> {{ membre.email }}</p>
+            <p><strong>Numéro de licence :</strong> {{ membre.license }}</p>
+            </div>
+</div>
+{% endblock %}

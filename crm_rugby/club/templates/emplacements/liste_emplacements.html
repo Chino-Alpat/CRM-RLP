@@ -1,10 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Liste des emplacements{% endblock %}
+{% block content %}
+    <h1>Liste des emplacements</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Support</th>
+                <th>Numéro</th>
+                <th>Occupé par</th>
+                <th>Durée d'engagement</th>
+                <th>Date de début</th>
+                <th>Date de fin</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emplacement in emplacements %}
+                <tr>
+                    <td>{{ emplacement.support }}</td>
+                    <td>{{ emplacement.numero }}</td>
+                    <td>
+                        {% if emplacement.sponsor %}
+                            {{ emplacement.sponsor.nom }}
+                        {% else %}
+                            Non
+                        {% endif %}
+                    </td>
+                    <td>
+                    {% if emplacement.duree_engagement %}
+                        {{ emplacement.duree_engagement }} mois
+                    {% else %}
+                        Non défini
+                    {% endif %}
+                    </td>
+                    <td>
+                        {% if emplacement.date_debut %}
+                            {{ emplacement.date_debut }}
+                        {% else %}
+                            Non défini
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if emplacement.date_fin %}
+                            {{ emplacement.date_fin }}
+                        {% else %}
+                            Non défini
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'modifier_emplacement' emplacement.id %}">Modifier</a>
+                        <a href="{% url 'supprimer_emplacement' emplacement.id %}">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'ajouter_emplacement' %}">Ajouter un emplacement</a>
+{% endblock %}

@@ -1,10 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}{% if support %}Modifier{% else %}Ajouter{% endif %} un support de visibilité{% endblock %}
+{% block content %}
+    <h1>{% if support %}Modifier{% else %}Ajouter{% endif %} un support de visibilité</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% for emplacement in support.emplacements.all %}
+            <div>
+                <label for="prix_emplacement_{{ emplacement.numero }}">Prix emplacement {{ emplacement.numero }} :</label>
+                <input type="number" name="prix_emplacement_{{ emplacement.numero }}" id="prix_emplacement_{{ emplacement.numero }}" value="{{ emplacement.prix }}" step="0.01"><br>
+            </div>
+        {% endfor %}
+        <button type="submit">Enregistrer</button>
+    </form>
+{% endblock %}

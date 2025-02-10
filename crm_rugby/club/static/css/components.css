@@ -1,0 +1,126 @@
+/* Style pour les boutons */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primaire {
+    background-color: #fce014; /* Jaune */
+    color: #262e63; /* Bleu marine */
+}
+
+.btn-primaire:hover {
+    background-color: #e6cd11; /* Jaune plus foncé au survol */
+}
+
+.btn-secondaire {
+    background-color: #262e63; /* Bleu marine */
+    color: #fce014; /* Jaune */
+}
+
+.btn-secondaire:hover {
+    background-color: #1f2556; /* Bleu marine plus foncé au survol */
+}
+
+/* Style pour les formulaires */
+form {
+    max-width: 600px; /* Largeur maximale du formulaire */
+    margin: 0 auto; /* Centrer le formulaire */
+    padding: 20px;
+    border: 1px solid #ddd; /* Bordure discrète */
+    border-radius: 8px; /* Bords arrondis */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Ombre légère */
+    background-color: white;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Style pour les tableaux */
+table {
+    width: 100%;
+    border-collapse: collapse; /* Fusion des bordures */
+    margin-bottom: 20px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Ombre légère */
+    border-radius: 8px; /* Bords arrondis */
+    overflow: hidden; /* Pour éviter que l'ombre dépasse des bords arrondis */
+}
+/* Style des en-têtes */
+th {
+    /*background-color: #f2f2f2; /* Couleur de fond claire */--couleur-primaire
+    background-color: var(--couleur-primaire);
+    color: var(--couleur-texte); /* Couleur de texte sombre */
+    font-weight: bold;
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #ddd; /* Bordure inférieure */
+}
+
+/* Style des cellules */
+td {
+    padding: 10px 15px;
+    border: 1px solid #ddd; /* Bordure pour chaque cellule */
+    text-align: left;
+}
+
+/* Style des lignes (alternées) */
+tr:nth-child(even) {
+    background-color: var(--couleur-fond-fonce); /* Couleur de fond légèrement différente pour les lignes paires */
+}
+
+/* Style au survol des lignes */
+tr:hover {
+    background-color: var(--couleur-hover); /* Couleur de fond plus claire au survol */
+}
+
+/* Style pour les bordures */
+table {
+    border: 1px solid #ddd; /* Bordure extérieure du tableau */
+}
+
+/* Style pour les tableaux responsifs */
+.table-responsive {
+    overflow-x: auto; /* Pour permettre le défilement horizontal si le tableau est trop large */
+}
+
+.checkbox-container {
+    display: inline-flex; /* Pour faciliter l'alignement */
+    align-items: center; /* Pour centrer verticalement */
+}
+
+.checkbox-container input[type="checkbox"] {
+    vertical-align: middle; /* Aligner le checkbox au milieu */
+    margin-right: 5px; /* Marge à droite du checkbox */
+}
+
+.checkbox-container .marker {
+    vertical-align: middle; /* Aligner le marker au milieu */
+}
+
+li {
+    list-style: none;
+    }

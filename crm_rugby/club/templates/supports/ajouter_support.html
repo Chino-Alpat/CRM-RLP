@@ -1,10 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}{% if support %}Modifier{% else %}Ajouter{% endif %} un support de visibilité{% endblock %}
+{% block content %}
+    <h1>{% if support %}Modifier{% else %}Ajouter{% endif %} un support de visibilité</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div id="emplacements">
+        </div>
+        <button type="submit">Enregistrer</button>
+    </form>
+{% endblock %}

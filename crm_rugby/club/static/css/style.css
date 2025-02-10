@@ -1,0 +1,74 @@
+/* base.css */
+:root {
+    --couleur-primaire: #fce014; /* Jaune */
+    --couleur-secondaire: #262e63; /* Bleu marine */
+    --couleur-fond: #f8f8f8; /* Gris clair */
+    --couleur-texte: #333; /* Gris foncé */
+}
+
+body {
+    font-family: sans-serif;
+    margin: 0;
+    background-color: var(--couleur-fond);
+    color: var(--couleur-texte);
+}
+
+a {
+    color: var(--couleur-primaire);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+h1, h2, h3 {
+    color: var(--couleur-secondaire);
+}
+
+/* layout.css */
+header {
+    background-color: var(--couleur-primaire);
+    color: white;
+    padding: 20px;
+}
+
+nav {
+    background-color: #000;
+    padding: 10px;
+}
+
+main {
+    padding: 20px;
+}
+
+footer {
+    background-color: var(--couleur-secondaire);
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+/* components.css */
+.button {
+    background-color: var(--couleur-primaire);
+    color: var(--couleur-secondaire);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.form-control {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* pages.css */
+/* Styles spécifiques à chaque page */
+
+/* responsive.css */
+@media (max-width: 768px) {
+    /* Styles pour les petits écrans */
+}

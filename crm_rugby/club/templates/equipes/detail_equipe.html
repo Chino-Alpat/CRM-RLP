@@ -1,10 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}{{ equipe.nom }}{% endblock %}
+{% block content %}
+    <h1>{{ equipe.nom }}</h1>
+        <div class="equipe-details">
+    <p>description: {{ equipe.description }}</p>
+    <ul>
+        {% for membre in equipe.membres.all %}
+            <li><a href="{% url 'detail_membre' membre.id %}">{{ membre.nom }}</a>
+                <div class="membre-photo">
+                        {% if membre.photo %}
+                            <img src="{{ membre.photo.url }}" alt="Photo de {{ membre.nom }}">
+                        {% endif %}
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

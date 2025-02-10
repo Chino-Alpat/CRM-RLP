@@ -1,15 +1,35 @@
 {% extends 'base.html' %}
-{% block title %}Liste des membres du club{% endblock %}
+{% block title %}Liste des membres{% endblock %}
 {% block content %}
-    <h1>Liste des membres du club</h1>
-    <ul>
-        {% for membre in membres %}
-            <li>
-                {{membre.nom}} {{membre.prenom}} ({{membre.surnom}})
-                <a href="{% url 'modifier_membre' membre.id %}">Modifier</a>
-                <a href="{% url 'supprimer_membre' membre.id %}">Supprimer</a>
-            </li>
-        {% endfor %}
-    </ul>
+    <h1>Liste des membres</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Licence</th>
+                <th>Photo</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for membre in membres %}
+                <tr>
+                    <td><a href="{% url 'detail_membre' membre.id %}">{{ membre.nom }}</a></td>
+                    <td>{{ membre.prenom }}</td>
+                    <td>{{ membre.license }}</td>
+                    <td>
+                        {% if membre.photo %}
+                            <img src="{{ membre.photo.url }}" alt="Logo {{ membre.nom }}" width="50">
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'modifier_membre' membre.id %}">Modifier</a>
+                        <a href="{% url 'supprimer_membre' membre.id %}">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     <a href="{% url 'ajouter_membre' %}">Ajouter un membre</a>
 {% endblock %}

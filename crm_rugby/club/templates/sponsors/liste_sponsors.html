@@ -1,10 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Liste des sponsors{% endblock %}
+{% block content %}
+    <h1>Liste des sponsors</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Logo</th>
+                <th>Coût total des emplacements</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in sponsors_avec_cout_total %}
+                <tr>
+                    <td><a href="{% url 'detail_sponsor' item.sponsor.id %}">{{ item.sponsor.nom }}</a></td>
+                    <td>
+                        {% if item.sponsor.logo %}
+                            <img src="{{ item.sponsor.logo.url }}" alt="Logo {{ item.sponsor.nom }}" width="50">
+                        {% endif %}
+                    </td>
+                    <td>{{ item.cout_total }} €</td>
+                    <td>
+                        <a href="{% url 'modifier_sponsor' item.sponsor.id %}">Modifier</a>
+                        <a href="{% url 'supprimer_sponsor' item.sponsor.id %}">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'ajouter_sponsor' %}">Ajouter un sponsor</a>
+{% endblock %}

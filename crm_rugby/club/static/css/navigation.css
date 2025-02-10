@@ -1,0 +1,42 @@
+nav {
+    background-color: #262e63; /* Bleu marine pour le fond */
+    padding: 10px;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex; /* Pour aligner les éléments horizontalement */
+    justify-content: space-around; /* Pour répartir les éléments uniformément */
+}
+
+nav li {
+    margin: 0 10px; /* Marge entre les éléments */
+}
+
+nav a {
+    color: #fce014; /* Jaune pour le texte */
+    text-decoration: none;
+    font-weight: bold; /* Texte en gras */
+    padding: 10px 15px; /* Padding pour augmenter la zone cliquable */
+    border-radius: 5px; /* Bords arrondis */
+    transition: background-color 0.3s ease; /* Transition pour l'effet hover */
+}
+
+nav a:hover {
+    background-color: #fce014; /* Jaune au survol */
+    color: #262e63; /* Bleu marine pour le texte au survol */
+}
+
+/* Responsive design (pour les petits écrans) */
+@media (max-width: 768px) {
+    nav ul {
+        flex-direction: column; /* Elements en colonne */
+        align-items: center; /* Centrer les éléments */
+    }
+
+    nav li {
+        margin: 10px 0; /* Marge verticale */
+    }
+}

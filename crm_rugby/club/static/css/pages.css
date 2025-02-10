@@ -1,0 +1,67 @@
+/* Style pour la page d'accueil */
+.page-accueil {
+    /* Styles spécifiques à la page d'accueil */
+}
+
+.page-accueil .hero {
+    background-color: var(--couleur-secondaire); /* Bleu marine pour la section principale */
+    color: var(--font-principale); /* Jaune pour le texte */
+    padding: 100px 0;
+    text-align: center;
+}
+
+.page-accueil .hero h1 {
+    font-size: 3em;
+    margin-bottom: 20px;
+}
+
+.page-accueil .hero p {
+    font-size: 1.2em;
+    line-height: 1.5;
+}
+
+/* Style pour la page de détails des membres */
+.page-details-membre {
+    max-width: 600px; /* Largeur maximale du formulaire */
+    margin: 0 auto; /* Centrer le formulaire */
+    padding: 20px;
+    border: 1px solid #ddd; /* Bordure discrète */
+    border-radius: 8px; /* Bords arrondis */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Ombre légère */
+    background-color: white;
+}
+
+.page-details-membre .membre-photo {
+    float: left; /* Image à gauche */
+    margin-right: 20px;
+}
+
+.page-details-membre .membre-info {
+    /* Informations à droite de l'image */
+}
+
+/* Style pour la page des équipes */
+.page-equipes {
+    /* Styles spécifiques à la page des équipes */
+}
+
+.page-equipes .equipe {
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.page-equipes .equipe h2 {
+    color: #262e63;
+}
+
+.page-equipes .equipe ul {
+    list-style: none;
+    padding: 0;
+}
+
+.page-equipes .equipe li {
+    margin-bottom: 10px;
+}
+
+/* ... styles pour les autres pages */

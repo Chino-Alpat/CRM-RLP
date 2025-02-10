@@ -1,10 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Liste des supports de visibilité{% endblock %}
+{% block content %}
+    <h1>Liste des supports de visibilité</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Description</th>
+            <th>Nombre d'emplacements</th>
+            <th>Coût total</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for support in supports_avec_cout_total %}
+            <tr>
+                <td>{{ support.support.nom }}</td>
+                <td>{{ support.support.description }}</td>
+                <td>{{ support.nombre_emplacements }}</td>
+                <td>{{ support.cout_total }} €</td>
+                <td>
+                    <a href="{% url 'modifier_support' support.support.id %}">Modifier</a>
+                    <a href="{% url 'supprimer_support' support.support.id %}">Supprimer</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+    <a href="{% url 'ajouter_support' %}">Ajouter un support de visibilité</a>
+{% endblock %}

@@ -1,0 +1,87 @@
+/* base.css */
+:root {
+    --couleur-primaire: #fce014; /* Jaune */
+    --couleur-secondaire: #262e63; /* Bleu marine */
+    --couleur-fond: #f8f8f8; /* Gris clair */
+    --couleur-fond-fonce: #e8e8e8; /* Gris clair */
+    --couleur-hover: #cbd6ff78;
+    --couleur-texte: #333; /* Gris foncé */
+
+    --font-principale: sans-serif;
+    --font-titres: 'Roboto', sans-serif; /* Exemple de police de caractères pour les titres */
+
+    --espace-marge: 16px;
+    --padding: 10px;
+}
+
+body {
+    font-family: var(--font-principale);
+    margin: 0;
+    background-color: var(--couleur-fond);
+    color: var(--couleur-secondaire);
+}
+
+header {
+    background-color: var(--couleur-secondaire);
+}
+
+header > h1 {
+    color: var(--couleur-primaire);
+}
+a {
+    color: var(--couleur-secondaire);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-titres);
+    color: var(--couleur-secondaire);
+}
+
+p {
+    margin-bottom: var(--espace-marge);
+}
+
+ul {
+    list-style: disc;
+    margin-left: 20px;
+    margin-bottom: var(--espace-marge);
+}
+
+ol {
+    list-style: decimal;
+    margin-left: 20px;
+    margin-bottom: var(--espace-marge);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+form input,
+form textarea,
+form select {
+    padding: var(--padding);
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    background-color: var(--couleur-primaire);
+    color: var(--couleur-secondaire);
+    padding: var(--padding) calc(var(--padding) * 2);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
