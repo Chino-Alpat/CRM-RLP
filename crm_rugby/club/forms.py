@@ -51,6 +51,10 @@ class MembreForm(forms.ModelForm):
                 altFormat="d/m/Y",  # Display format (e.g., 25/12/2024)
             )),  # Format de date
         }
+
+class ImportXLSXForm(forms.Form):
+    xlsx_file = forms.FileField(label='Fichier XLSX')
+
 class EquipeForm(forms.ModelForm):
     class Meta:
         model = Equipe

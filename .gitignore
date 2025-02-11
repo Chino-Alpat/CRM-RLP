@@ -5,3 +5,5 @@ __pycache__/
 .venv/
 .env
 *.pyc
+
+crm_rugby/club/migrations/
