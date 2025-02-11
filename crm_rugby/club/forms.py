@@ -26,6 +26,10 @@ class SponsorForm(forms.ModelForm):
         widgets = {
                     'montant_contribution': forms.HiddenInput(), # Rendre le champ caché
                 }
+
+class ImportCSVForm(forms.Form):
+    csv_file = forms.FileField(label='Fichier CSV')
+
 class EmplacementForm(forms.ModelForm):
     class Meta:
         model = Emplacement

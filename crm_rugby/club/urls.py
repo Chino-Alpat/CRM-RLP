@@ -10,6 +10,7 @@ urlpatterns = [
     path('sponsors/<int:pk>/modifier/', views.modifier_sponsor, name='modifier_sponsor'),
     path('sponsors/<int:pk>/supprimer/', views.supprimer_sponsor, name='supprimer_sponsor'),
     path('sponsors/<int:pk>/', views.detail_sponsor, name='detail_sponsor'),
+    path('sponsors/importer_sponsors/', views.importer_csv_sponsors, name='importer_sponsors'),
 
     # URL pour les Membres
     path('membres/', views.liste_membres, name='liste_membres'),
