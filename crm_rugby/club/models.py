@@ -51,9 +51,15 @@ class Membre(models.Model):
     email = models.EmailField(blank=True, null=True)
     telephone = models.CharField(max_length=20, blank=True, null=True)
     date_naissance = models.DateField(blank=True, null=True)
+    CP = models.CharField(max_length=5, blank=True, null=True)
+    Categorie = models.CharField(max_length=6, blank=True, null=True)
+    Classe_age = models.CharField(max_length=6, blank=True, null=True)
+    Ville =  models.CharField(max_length=100, blank=True, null=True)
+    adresse = models.TextField(max_length=300, blank=True, null=True)
 
     def __str__(self):
         return f"{self.nom} {self.prenom}"
+
 class Equipe(models.Model):
     nom = models.CharField(max_length=100)
     categorie = models.CharField(max_length=100)

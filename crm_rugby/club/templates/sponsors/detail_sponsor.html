@@ -2,6 +2,7 @@
 {% block title %}{{ sponsor.nom }}{% endblock %}
 {% block content %}
     <div class="sponsor-details">
+        <h1>{{ sponsor.nom }}</h1>
         <div class="sponsor-header">
             {% if sponsor.logo %}
                 <img src="{{ sponsor.logo.url }}" alt="Logo {{ sponsor.nom }}" width="100">

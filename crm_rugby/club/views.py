@@ -1,13 +1,14 @@
+import openpyxl
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q, Sum
 from django.contrib.auth import authenticate, login, logout
-from .forms import LoginForm
+from .forms import LoginForm, ImportCSVForm, ImportXLSXForm
 from .models import Sponsor, Membre, Equipe, Tournoi, Match, SupportVisibilite, Emplacement
 from .forms import MembreForm, EquipeForm, TournoiForm, SponsorForm, MatchForm, EmplacementForm, SupportVisibiliteForm, \
     InscriptionForm
-from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
+import csv
 
 def index(request):
     if request.method == 'POST':
@@ -202,6 +203,60 @@ def liste_supports(request):
     print(context)
     return render(request, 'supports/liste_supports.html', context)
 
+def importer_csv_sponsors(request):
+    if request.method == 'POST':
+        form = ImportCSVForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = request.FILES['csv_file']
+            reader = csv.DictReader(csv_file.read().decode('utf-8').splitlines(), delimiter=';')
+            for row in reader:
+                print(row)
+                # Créer ou mettre à jour un partenaire en fonction des données du CSV
+                partenaire, created = Sponsor.objects.update_or_create(
+                    nom=row['SURNOM'],
+                    defaults={
+                        'email': row['EMAIL'],
+                        'telephone': row['SMS'],
+                        'contact': f"{row['FIRSTNAME'].capitalize()} {row['LASTNAME'].capitalize()}"
+                        # ... autres champs
+                    }
+                )
+            return redirect('liste_sponsors') # Rediriger vers la page de liste des partenaires
+    else:
+        form = ImportCSVForm()
+    return render(request, 'sponsors/importer_sponsors.html', {'form': form})
+
+def importer_xlsx_membres(request):
+    if request.method == 'POST':
+        form = ImportXLSXForm(request.POST, request.FILES)
+        if form.is_valid():
+            xlsx_file = request.FILES['xlsx_file']
+            workbook = openpyxl.load_workbook(xlsx_file)
+            sheet = workbook.active
+            headers = [cell.value for cell in sheet[1]]  # Lire la première ligne comme en-têtes
+            reader = (dict(zip(headers, (cell.value for cell in row))) for row in sheet.iter_rows(min_row=2))
+            for row in reader:
+                print(row)
+                # Créer ou mettre à jour un membre en fonction des données du fichier
+                membre, created = Membre.objects.update_or_create(
+                    nom=f"{row['Nom'].capitalize()}",
+                    defaults={
+                        'prenom': row['Prenom'].capitalize(),
+                        'Categorie' : row['Qualité'],
+                        "Classe_age" : row["Classe d'âge"],
+                        'email': row['Email'],
+                        'telephone': row['Téléphone'],
+                        'adresse' : row['Adresse'],
+                        'CP': row['CP'],
+                        'Ville' : row['Ville'],
+                        'date_naissance' : row['Date Naissance'],
+                        # ... autres champs
+                    }
+                )
+            return redirect('liste_membres')  # Rediriger vers la page de liste des membres
+    else:
+        form = ImportXLSXForm()
+    return render(request, 'membres/importer_membres.html', {'form': form})
 
 def ajouter_support(request):
     if request.method == 'POST':
