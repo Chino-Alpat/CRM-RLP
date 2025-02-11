@@ -21,6 +21,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('membres/inscription/', views.inscription, name='inscription'),
     path('membre/<int:pk>/', views.detail_membre, name='detail_membre'),
+    path('membres/importer_membres/', views.importer_xlsx_membres, name='importer_membres'),
 
     # URL pour les Équipes
     path('equipes/', views.liste_equipes, name='liste_equipes'),
