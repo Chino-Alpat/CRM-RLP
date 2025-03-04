@@ -1,15 +1,20 @@
 from django.db import models
+from django.db.models import Sum
+
 
 class SupportVisibilite(models.Model):
-    nom = models.CharField(max_length=100)
+    nom = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     nombre_emplacements = models.PositiveIntegerField(default=1)
+
     def __str__(self):
         return self.nom
 
     @property
     def prix(self):
-        return sum(emplacement.prix for emplacement in self.emplacements.all())
+        result = self.emplacements.all().aggregate(total=Sum('prix'))
+        return result['total'] or 0.00  # Gérer le cas None
+
 
 class Sponsor(models.Model):
     nom = models.CharField(max_length=100)
@@ -20,16 +25,18 @@ class Sponsor(models.Model):
     telephone = models.CharField(max_length=20, blank=True, null=True)
     type_partenariat = models.CharField(max_length=100, blank=True, null=True)
     montant_contribution = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    actif = models.BooleanField(default=True)
+    emplacements = models.ManyToManyField('Emplacement', related_name='sponsor_emplacements')
 
     def __str__(self):
         return self.nom
 
 
 class Emplacement(models.Model):
-    support = models.ForeignKey(SupportVisibilite, on_delete=models.CASCADE, related_name='emplacements')
+    support = models.ForeignKey(SupportVisibilite, on_delete=models.CASCADE, related_name='emplacements')  # related_name modifié
+    #sponsor = models.ForeignKey(Sponsor, on_delete=models.SET_NULL, blank=True, null=True, related_name='emplacements_sponsor')  # related_name modifié
     numero = models.PositiveIntegerField()
-    sponsor = models.ForeignKey(Sponsor, on_delete=models.SET_NULL, blank=True, null=True, related_name='emplacements')
-    prix = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Prix de l'emplacement
+    prix = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     duree_engagement = models.DecimalField(max_digits=2, decimal_places=0, blank=True, null=True, help_text="Durée de l'engagement en mois")
     date_debut = models.DateField(blank=True, null=True, help_text="Date de début de l'engagement")
     date_fin = models.DateField(blank=True, null=True, help_text="Date de fin de l'engagement")
@@ -40,9 +47,17 @@ class Emplacement(models.Model):
     def __str__(self):
         return f"Emplacement {self.numero} sur {self.support}"
 
+class Categorie(models.Model):
+    nom = models.CharField(max_length=100, unique=True)  # Ou un autre champ unique
+
+    # ... d'autres champs si nécessaire
+
+    def __str__(self):
+        return self.nom
+
 
 class Membre(models.Model):
-    username = models.CharField(max_length=100,blank=True, null=True)
+    username = models.CharField(max_length=100, blank=True, null=True)
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)
     surnom = models.CharField(max_length=100, blank=True, null=True)
@@ -52,23 +67,28 @@ class Membre(models.Model):
     telephone = models.CharField(max_length=20, blank=True, null=True)
     date_naissance = models.DateField(blank=True, null=True)
     CP = models.CharField(max_length=5, blank=True, null=True)
-    Categorie = models.CharField(max_length=6, blank=True, null=True)
+    Categorie = models.ManyToManyField('Categorie')
+    # Categorie = models.CharField(max_length=6, blank=True, null=True)
     Classe_age = models.CharField(max_length=6, blank=True, null=True)
-    Ville =  models.CharField(max_length=100, blank=True, null=True)
+    Ville = models.CharField(max_length=100, blank=True, null=True)
     adresse = models.TextField(max_length=300, blank=True, null=True)
 
     def __str__(self):
         return f"{self.nom} {self.prenom}"
 
+
 class Equipe(models.Model):
     nom = models.CharField(max_length=100)
     categorie = models.CharField(max_length=100)
-    entraineur = models.ForeignKey(Membre, on_delete=models.SET_NULL, blank=True, null=True, related_name='equipes_entrainees')
+    entraineur = models.ForeignKey(Membre, on_delete=models.SET_NULL, blank=True, null=True,
+                                   related_name='equipes_entrainees')
     membres = models.ManyToManyField(Membre, related_name='equipes_jouees')
     sponsors = models.ManyToManyField(Sponsor, related_name='equipes_sponsorisees', blank=True)
 
     def __str__(self):
         return self.nom
+
+
 class Tournoi(models.Model):
     nom = models.CharField(max_length=100)
     date_debut = models.DateField(blank=True, null=True)
@@ -80,10 +100,11 @@ class Tournoi(models.Model):
     def __str__(self):
         return self.nom
 
+
 class Match(models.Model):
     date = models.DateField(blank=True, null=True)
     equipe_domicile = models.ForeignKey(Equipe, on_delete=models.CASCADE, related_name='match_domicile')
-    equipe_exterieur = models.ForeignKey(Equipe, on_delete=models.CASCADE,related_name='match_exterieur')
+    equipe_exterieur = models.ForeignKey(Equipe, on_delete=models.CASCADE, related_name='match_exterieur')
     score_domicile = models.PositiveIntegerField(blank=True, null=True)
     score_exterieur = models.PositiveIntegerField(blank=True, null=True)
     tournois = models.ForeignKey(Tournoi, on_delete=models.CASCADE, blank=True, null=True)

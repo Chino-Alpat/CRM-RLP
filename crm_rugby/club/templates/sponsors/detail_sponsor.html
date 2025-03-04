@@ -3,6 +3,7 @@
 {% block content %}
     <div class="sponsor-details">
         <h1>{{ sponsor.nom }}</h1>
+        <p>Nombre d'emplacements : {{ emplacements.all.count }}</p>
         <div class="sponsor-header">
             {% if sponsor.logo %}
                 <img src="{{ sponsor.logo.url }}" alt="Logo {{ sponsor.nom }}" width="100">
@@ -17,7 +18,7 @@
         <div class="sponsor-locations">
             <h2>Emplacements :</h2>
             <ul>
-                {% for emplacement in sponsor.emplacements.all %}
+                {% for emplacement in emplacements %}
                     <li>{{ emplacement.support }} - Emplacement {{ emplacement.numero }} ({{ emplacement.prix }} €)</li>
                 {% endfor %}
             </ul>

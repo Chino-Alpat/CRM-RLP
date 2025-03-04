@@ -32,8 +32,12 @@
     <footer>
         <p>&copy; 2025 Rugby Lannion Perros - F.CARLUER</p>
         {% if user.is_authenticated %}
+        <div class="welcome_view">
             <p>Bonjour, {{ user.username }} !</p>
             <a href="{% url 'logout' %}">Se déconnecter</a>
+            <a href="{% url 'exporter_donnees_csv' %}">Exporter les données au format CSV</a>
+            <a href="{% url 'importer_donnees_csv' %}">Importer les données au format CSV</a>
+        </div>
         {% else %}
             <h2>Se connecter</h2>
             <form method="post">
@@ -50,6 +54,7 @@
             </form>
             <a href="{% url 'password_reset' %}">Mot de passe oublié ?</a>
         {% endif %}
+
     </footer>
 </body>
 </html>

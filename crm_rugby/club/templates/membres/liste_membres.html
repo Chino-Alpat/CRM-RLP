@@ -3,9 +3,12 @@
 {% block content %}
     <h1>Liste des membres</h1>
     <a href="{% url 'importer_membres' %}">Importer un fichier xlsx</a>
+    <form id="deleteForm" method="post" action="{% url 'supprimer_membres' %}">
+        {% csrf_token %}
     <table>
         <thead>
             <tr>
+                <th><input type="checkbox" id="selectAll"></th> {# Checkbox pour sélectionner tout #}
                 <th>Nom</th>
                 <th>Prénom</th>
                 <th>Licence</th>
@@ -16,6 +19,7 @@
         <tbody>
             {% for membre in membres %}
                 <tr>
+                    <td><input type="checkbox" name="selected_items" value="{{ membre.id }}"></td>
                     <td><a href="{% url 'detail_membre' membre.id %}">{{ membre.nom }}</a></td>
                     <td>{{ membre.prenom }}</td>
                     <td>{{ membre.license }}</td>
@@ -32,5 +36,19 @@
             {% endfor %}
         </tbody>
     </table>
+        <button type="submit">Supprimer les éléments sélectionnés</button>
+    </form>
+<script>
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('input[name="selected_items"]');
+
+    if (selectAll && checkboxes) { // Vérifier si les éléments existent
+        selectAll.addEventListener('change', () => {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        });
+    }
+</script>
     <a href="{% url 'ajouter_membre' %}">Ajouter un membre</a>
 {% endblock %}

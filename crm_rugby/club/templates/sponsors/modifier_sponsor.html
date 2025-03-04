@@ -1,45 +1,75 @@
 {% extends 'base.html' %}
-{% block title %}Modifier un sponsor{% endblock %}
+{% load custom_filters %}
 {% block content %}
-<h1>Modifier un sponsor</h1>
-<form method="post" enctype="multipart/form-data">
+  <h1>Modifier le sponsor : {{ sponsor.nom }}</h1>
+
+  <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <p>Montant de la contribution : {{ montant_contribution }} €</p>
-    <h2>Emplacements disponibles :</h2>
-    {% for support in supports %}
-    <h3>{{ support.nom }}</h3>
-    <ul>
-        {% for emplacement in support.emplacements.all %}
-        {% if emplacement.sponsor == None %}
-        <li>
-            <div class="checkbox-container">
-                <input type="checkbox" name="emplacements" value="{{ emplacement.id }}">
-                <label for="emplacement_{{ emplacement.id }}">{{ emplacement.support }} - Emplacement {{ emplacement.numero }} ({{ emplacement.prix }} €)</label>
-            </div>
-        </li>
-        {% endif %}
-        {% endfor %}
-    </ul>
-    {% endfor %}
-    {% if sponsor %} <h2>Emplacements pris par ce sponsor :</h2>
-    {% for support in supports %}
-    <h3>{{ support.nom }}</h3>
-    <ul>
-        {% for emplacement in sponsor.emplacements.all %}
-            {% if emplacement.support_id == support.id %}
-                <li>
-                    <div class="checkbox-container">
-                                <input type="checkbox" name="emplacements" value="{{ emplacement.id }}" checked>
-                                <label for="emplacement_{{ emplacement.id }}">{{ emplacement.support }} - Emplacement {{ emplacement.numero }} ({{ emplacement.prix }} €)</label>
-                    </div>
-                </li>
-            {% endif %}
-        {% endfor %}
-    </ul>
-    {% endfor %}
-    {% endif %}
+    <button type="submit">Enregistrer les modifications</button>
+  </form>
 
-    <button type="submit">Enregistrer</button>
-</form>
+  <h2>Emplacements pris par le sponsor :</h2>
+  <ul>
+    {% for support in supports %}
+      <h3>{{ support.nom }}</h3>
+      <ul>
+        {% for emplacement in emplacements_par_support|get_item:support %}  <li>{{ emplacement.numero }} - {{ emplacement.prix }} €</li>
+        {% endfor %}
+      </ul>
+    {% endfor %}
+  </ul>
+
+  <h2>Ajouter/retirer des emplacements :</h2>
+  <form method="post">
+    {% csrf_token %}
+    <label for="support">Support :</label>
+    <select name="support" id="support">
+      <option value="">---------</option>
+      {% for support in supports %}
+        <option value="{{ support.id }}">{{ support.nom }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="emplacements">Emplacements :</label>
+    <ul id="emplacements-list">
+      {# Les emplacements seront ajoutés ici par JavaScript #}
+    </ul>
+
+    <button type="submit">Mettre à jour les emplacements</button>
+  </form>
+
+  <p>Montant total de la contribution : {{ montant_contribution }} €</p>
+<script>
+    const supportSelect = document.getElementById('support');
+    const emplacementsList = document.getElementById('emplacements-list');
+
+    supportSelect.addEventListener('change', function() {
+      const supportId = this.value;
+      if (supportId) {
+        fetch(`/club/emplacements/${supportId}/`)
+          .then(response => response.json())
+          .then(data => {
+            emplacementsList.innerHTML = '';
+            data.forEach(emplacement => {
+              const li = document.createElement('li');
+              const checkbox = document.createElement('input');
+              checkbox.type = 'checkbox';
+              checkbox.name = 'emplacements';
+              checkbox.value = emplacement.id;
+              // Ajoutez ici la logique pour cocher les emplacements déjà pris par le sponsor
+              const isChecked = {{ emplacements_pris|jsonify }}.some(e => e.id === emplacement.id);
+              if (isChecked) {
+                checkbox.checked = true;
+              }
+              li.appendChild(checkbox);
+              li.appendChild(document.createTextNode(`${emplacement.numero} - ${emplacement.prix} €`));
+              emplacementsList.appendChild(li);
+            });
+          });
+      } else {
+        emplacementsList.innerHTML = '';
+      }
+    });
+  </script>
 {% endblock %}

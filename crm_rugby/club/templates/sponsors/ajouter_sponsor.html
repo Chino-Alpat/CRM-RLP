@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% block title %}{% if sponsor %}Modifier{% else %}Ajouter{% endif %} un sponsor{% endblock %}
+{% block title %}Ajouter un sponsor{% endblock %}
 {% block content %}
-    <h1>{% if sponsor %}Modifier{% else %}Ajouter{% endif %} un sponsor</h1>
+    <h1>Ajouter un sponsor</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
@@ -20,7 +20,22 @@
                 {% endfor %}
             </ul>
         {% endfor %}
-
+        <h2>Emplacements disponibles :</h2>
+    {% for support in supports %}
+        <h3>{{ support.nom }}</h3>
+        <ul>
+            {% for emplacement in support.emplacements.all %}
+                {% if emplacement.sponsor_emplacements.all.count == 0 %}
+                <li>
+                    <div class="checkbox-container">
+                        <input type="checkbox" name="emplacements" value="{{ emplacement.id }}">
+                        <label for="emplacement_{{ emplacement.id }}">{{ emplacement.support }} - Emplacement {{ emplacement.numero }} ({{ emplacement.prix }} €)</label>
+                    </div>
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% endfor %}
         <button type="submit">Enregistrer</button>
     </form>
 {% endblock %}
