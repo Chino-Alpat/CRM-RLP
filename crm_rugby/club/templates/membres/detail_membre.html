@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}{{  membre.nom }}{% endblock %}
 {% block content %}
-<h1>{{ membre.nom }}</h1>
+<h1>Détail de : {{ membre.nom }} {{ membre.prenom }}{% if membre.surnom %} ({{ membre.surnom }}){% endif %}</h1>
 
 <div class="membre-details">
     <div class="membre-photo">
@@ -13,6 +13,15 @@
             <p><strong>Description :</strong> {{ membre.description }}</p>
             <p><strong>Email :</strong> {{ membre.email }}</p>
             <p><strong>Numéro de licence :</strong> {{ membre.license }}</p>
-            </div>
+            <p><strong>Téléphone :</strong> {{ membre.telephone }}</p>
+            <p><strong>Date de naissance :</strong> {{ membre.date_naissance }}</p>
+            <p><strong>Adresse :</strong> {{ membre.adresse }} - {{ membre.CP }} {{ membre.Ville }}</p>
+        </div>
+    <h2>Catégories :</h2>
+        <ul>
+            {% for categorie in categories %}
+                <li>{{ categorie.nom }}</li>
+            {% endfor %}
+        </ul>
 </div>
 {% endblock %}

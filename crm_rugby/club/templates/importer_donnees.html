@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Importer des membres{% endblock %}
+{% block content %}
+<h1>Importation de données CSV</h1>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}  <button type="submit">Importer</button>
+    </form>
+
+    <a href="{% url 'liste_sponsors' %}">Retour à la liste</a>
+{% endblock %}

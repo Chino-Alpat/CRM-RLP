@@ -1,14 +1,24 @@
+from datetime import datetime
+
 import openpyxl
+from django.apps import apps
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q, Sum
 from django.contrib.auth import authenticate, login, logout
+from django.urls import reverse
+from django.db import models, transaction
 from .forms import LoginForm, ImportCSVForm, ImportXLSXForm
-from .models import Sponsor, Membre, Equipe, Tournoi, Match, SupportVisibilite, Emplacement
+from .models import Sponsor, Membre, Equipe, Tournoi, Match, SupportVisibilite, Emplacement, Categorie
 from .forms import MembreForm, EquipeForm, TournoiForm, SponsorForm, MatchForm, EmplacementForm, SupportVisibiliteForm, \
     InscriptionForm
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
 import csv
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 def index(request):
     if request.method == 'POST':
@@ -87,101 +97,134 @@ def supprimer_emplacement(request, pk):
     emplacement.delete()
     return redirect('liste_emplacements')
 
+# @login_required
+# def liste_sponsors(request):
+#     sponsors = Sponsor.objects.all()
+#     actif = request.GET.get('actif')
+#     if actif == 'oui':
+#         sponsors = Sponsor.objects.filter(actif=True)
+#     elif actif == 'non':
+#         sponsors = Sponsor.objects.filter(actif=False)
+#     else:
+#         sponsors = Sponsor.objects.all()  # Tous les sponsors par défaut
+#     #sponsors = Sponsor.objects.prefetch_related('emplacements').all()
+#     #context = {'sponsors': sponsors}
+#     #return render(request, 'sponsors/liste_sponsors.html', context)
+#     # Prépare les données pour le template
+#     sponsors_avec_cout_total = []
+#     for sponsor in sponsors:
+#         cout_total = sponsor.emplacements.all().aggregate(total=Sum('prix'))['total'] or 0.00
+#         sponsors_avec_cout_total.append({
+#             'sponsor': sponsor,
+#             'cout_total': cout_total,
+#         })
+#
+#     context = {
+#         'sponsors_avec_cout_total': sponsors_avec_cout_total,
+#     }
+#
+#     return render(request, 'sponsors/liste_sponsors.html', context)
+
 @login_required
 def liste_sponsors(request):
-    sponsors = Sponsor.objects.all()
-
-    # Prépare les données pour le template
-    sponsors_avec_cout_total = []
-    for sponsor in sponsors:
-        cout_total = sponsor.emplacements.all().aggregate(total=Sum('prix'))['total'] or 0.00
-        sponsors_avec_cout_total.append({
-            'sponsor': sponsor,
-            'cout_total': cout_total,
-        })
+    actif = request.GET.get('actif')
+    if actif == 'oui':
+        sponsors = Sponsor.objects.filter(actif=True).annotate(
+            cout_total=Sum('emplacements__prix')  # <-- Correction ici
+        )
+    elif actif == 'non':
+        sponsors = Sponsor.objects.filter(actif=False).annotate(
+            cout_total=Sum('emplacements__prix')  # <-- Correction ici
+        )
+    else:
+        sponsors = Sponsor.objects.all().annotate(
+            cout_total=Sum('emplacements__prix')  # <-- Correction ici
+        )
 
     context = {
-        'sponsors_avec_cout_total': sponsors_avec_cout_total,
+        'sponsors': sponsors,
     }
-
     return render(request, 'sponsors/liste_sponsors.html', context)
 
 def calculer_montant_contribution(emplacements):
-    montant = 0
-    for emplacement in emplacements:
-        montant += emplacement.prix # Exemple : additionner le prix de chaque emplacement
-    return montant
+    result = emplacements.aggregate(total=Sum('prix'))  # Calcule la somme
+    return result['total'] or 0  # Gère le cas où il n'y a pas d'emplacements (None)
 
 def detail_sponsor(request, pk):
-    sponsor = get_object_or_404(Sponsor, pk=pk)
-    emplacements = Emplacement.objects.filter(sponsor=sponsor)
-    montant_contribution = calculer_montant_contribution(emplacements)
-    return render(request, 'sponsors/detail_sponsor.html', {'sponsor': sponsor,'montant_contribution':montant_contribution })
-
+    sponsor = Sponsor.objects.prefetch_related('emplacements').get(pk=pk)
+    #emplacements = Emplacement.objects.filter(sponsor=sponsor,)  # Vous pouvez garder cette ligne si vous avez besoin des emplacements pour autre chose
+    montant_contribution = calculer_montant_contribution(sponsor.emplacements.all())
+    return render(request, 'sponsors/detail_sponsor.html', {'sponsor': sponsor, 'montant_contribution': montant_contribution, 'emplacements':sponsor.emplacements.all()})
 
 def ajouter_sponsor(request):
     if request.method == 'POST':
         form = SponsorForm(request.POST, request.FILES)
         if form.is_valid():
-            sponsor = form.save()
-            emplacements = request.POST.getlist('emplacements')
-            for emplacement_id in emplacements:
-                emplacement = Emplacement.objects.get(pk=emplacement_id)
-                emplacement.sponsor = sponsor
-                emplacement.save()
+            form.save()  # Enregistre le sponsor (sans les emplacements pour l'instant)
+            #form.save_m2m() # Enregistre les emplacements après l'enregistrement du sponsor
+
             return redirect('liste_sponsors')
     else:
         form = SponsorForm()
-        # Emplacements disponibles (non occupés)
-        emplacements_disponibles = Emplacement.objects.filter(sponsor=None)
-        supports = SupportVisibilite.objects.all()
-        # emplacements = Emplacement.objects.filter(sponsor=None) # Emplacements non occupés
-    return render(request, 'sponsors/ajouter_sponsor.html', {
-        'form': form,
-        'emplacements': emplacements_disponibles,
-        'supports': supports,
-    })
+    return render(request, 'sponsors/ajouter_sponsor.html', {'form': form})
 
 
-def modifier_sponsor(request, pk):
-    sponsor = get_object_or_404(Sponsor, pk=pk)
+def modifier_sponsor(request, sponsor_id):
+    sponsor = get_object_or_404(Sponsor, pk=sponsor_id)
+    supports = SupportVisibilite.objects.all()
+
     if request.method == 'POST':
         form = SponsorForm(request.POST, request.FILES, instance=sponsor)
         if form.is_valid():
-            sponsor = form.save()
-            # Réinitialiser les emplacements occupés par ce sponsor
-            Emplacement.objects.filter(sponsor=sponsor).update(sponsor=None)
-            emplacements = request.POST.getlist('emplacements')
-            for emplacement_id in emplacements:
-                emplacement = Emplacement.objects.get(pk=emplacement_id)
-                emplacement.sponsor = sponsor
-                emplacement.save()
-
-            return redirect('liste_sponsors')
+            form.save()
+            return redirect('liste_sponsors')  # Rediriger vers la liste des sponsors
     else:
         form = SponsorForm(instance=sponsor)
-        # Emplacements disponibles et emplacements pris par ce sponsor
-        supports = SupportVisibilite.objects.all()
-        emplacements = Emplacement.objects.filter(Q(sponsor=None) | Q(sponsor=sponsor))
-        emplacements_spo = Emplacement.objects.filter(sponsor=sponsor)
-        montant_contribution = calculer_montant_contribution(emplacements_spo)
-        emplacements_disponibles = Emplacement.objects.filter(sponsor=None)
 
-    return render(request, 'sponsors/modifier_sponsor.html', {
-        'form': form,
+    emplacements_pris = sponsor.emplacements.all()
+    montant_contribution = emplacements_pris.aggregate(total=Sum('prix'))['total'] or 0
+
+    # Filtrage des emplacements par support dans la vue
+    emplacements_par_support = {}
+    for support in supports:
+        emplacements_par_support[support] = sponsor.emplacements.filter(support=support)
+
+    return render(request, 'club/modifier_sponsor.html', {
         'sponsor': sponsor,
-        'emplacements': emplacements,
-        'emplacements_disponibles': emplacements_disponibles,
         'supports': supports,
+        'form': form,
+        'emplacements_pris': emplacements_pris,
         'montant_contribution': montant_contribution,
+        'emplacements_par_support': emplacements_par_support,
     })
-
 
 def supprimer_sponsor(request, pk):
     sponsor = get_object_or_404(Sponsor, pk=pk)
     sponsor.delete()
     return redirect('liste_sponsors')
 
+def supprimer_sponsors(request):
+    if request.method == 'POST':
+        selected_items = request.POST.getlist('selected_items')
+        if selected_items:
+            # Supprimer les sponsors sélectionnés
+            Sponsor.objects.filter(id__in=selected_items).delete()
+            # Supprimer les membres sélectionnés
+            Membre.objects.filter(id__in=selected_items).delete()
+            # Ajoutez ici la logique pour les autres modèles si nécessaire
+        return redirect('liste_sponsors')  # Redirigez vers la page appropriée
+    return redirect('index')  # Redirigez en cas de requête GET
+
+def supprimer_membres(request):
+    if request.method == 'POST':
+        selected_items = request.POST.getlist('selected_items')
+        if selected_items:
+            # Supprimer les membres sélectionnés
+            Membre.objects.filter(id__in=selected_items).delete()
+            print(f"Redirection vers : {reverse('liste_membres')}")  # Afficher l'URL de redirection
+        return redirect('liste_membres')  # Redirigez vers la page appropriée
+    print(f"Redirection vers : {reverse('liste_membres')}")  # Afficher l'URL de redirection
+    return redirect('index')  # Redirigez en cas de requête GET
 
 # Vues pour les Supports de Visibilité
 @login_required
@@ -200,8 +243,14 @@ def liste_supports(request):
     context = {
         'supports_avec_cout_total': supports_avec_cout_total,
     }
-    print(context)
     return render(request, 'supports/liste_supports.html', context)
+
+
+def emplacements_par_support(request, support_id):
+    emplacements = Emplacement.objects.filter(support_id=support_id)
+    data = [{'id': emplacement.id, 'numero': emplacement.numero, 'prix': str(emplacement.prix)} for emplacement in emplacements]
+    return JsonResponse(data, safe=False)
+
 
 def importer_csv_sponsors(request):
     if request.method == 'POST':
@@ -226,6 +275,8 @@ def importer_csv_sponsors(request):
         form = ImportCSVForm()
     return render(request, 'sponsors/importer_sponsors.html', {'form': form})
 
+
+@login_required
 def importer_xlsx_membres(request):
     if request.method == 'POST':
         form = ImportXLSXForm(request.POST, request.FILES)
@@ -233,30 +284,244 @@ def importer_xlsx_membres(request):
             xlsx_file = request.FILES['xlsx_file']
             workbook = openpyxl.load_workbook(xlsx_file)
             sheet = workbook.active
-            headers = [cell.value for cell in sheet[1]]  # Lire la première ligne comme en-têtes
+            headers = [cell.value for cell in sheet[1]]
             reader = (dict(zip(headers, (cell.value for cell in row))) for row in sheet.iter_rows(min_row=2))
-            for row in reader:
-                print(row)
-                # Créer ou mettre à jour un membre en fonction des données du fichier
-                membre, created = Membre.objects.update_or_create(
-                    nom=f"{row['Nom'].capitalize()}",
-                    defaults={
-                        'prenom': row['Prenom'].capitalize(),
-                        'Categorie' : row['Qualité'],
-                        "Classe_age" : row["Classe d'âge"],
-                        'email': row['Email'],
-                        'telephone': row['Téléphone'],
-                        'adresse' : row['Adresse'],
-                        'CP': row['CP'],
-                        'Ville' : row['Ville'],
-                        'date_naissance' : row['Date Naissance'],
-                        # ... autres champs
-                    }
-                )
-            return redirect('liste_membres')  # Rediriger vers la page de liste des membres
+
+            with transaction.atomic():
+                all_rows = list(reader)  # Lecture de toutes les lignes dans une liste
+
+                email_to_categories = {}  # Dictionnaire pour mapper les emails aux catégories
+                for row in all_rows:
+                    email = row.get('Email')
+                    if email:
+                        categories = row.get('Qualité', '').split(',')
+                        email_to_categories.setdefault(email, []).extend(categories)
+
+                membres_traites = set()
+
+                for row in all_rows:
+                    email = row.get('Email')
+
+                    if email and email not in membres_traites:
+                        try:
+                            membre, created = Membre.objects.update_or_create(
+                                email=email,
+                                defaults={
+                                    'nom': row.get('Nom', '').capitalize(),
+                                    'prenom': row.get('Prenom', '').capitalize(),
+                                    'Classe_age': row.get('Classe d\'âge'),
+                                    'telephone': row.get('Téléphone'),
+                                    'adresse': row.get('Adresse'),
+                                    'CP': row.get('CP'),
+                                    'Ville': row.get('Ville'),
+                                    'date_naissance': row.get('Date Naissance'),
+                                }
+                            )
+
+                            categories_names = set(email_to_categories.get(email, []))  # Récupérer et nettoyer les catégories
+                            categories_instances = []
+                            for cat_name in categories_names:
+                                cat_name = cat_name.strip()
+                                if cat_name:
+                                    categorie_instance, _ = Categorie.objects.get_or_create(nom=cat_name)
+                                    categories_instances.append(categorie_instance)
+
+                            membre.Categorie.set(categories_instances)
+
+                            membres_traites.add(email)
+
+                            if created:
+                                print(f"Nouveau membre créé : {membre}")
+                            else:
+                                print(f"Membre mis à jour : {membre}")
+
+                        except Exception as e:
+                            print(f"Erreur lors de la mise à jour/création du membre '{email}': {e}")
+                            raise  # Important pour annuler la transaction en cas d'erreur
+
+            return redirect('liste_membres')
+
     else:
         form = ImportXLSXForm()
     return render(request, 'membres/importer_membres.html', {'form': form})
+
+
+@login_required
+def exporter_donnees_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="donnees.csv"'
+
+    writer = csv.writer(response)
+
+    # Écriture de l'en-tête CSV (noms des colonnes)
+    writer.writerow(['Modèle', 'ID', 'Nom', 'Email', 'Téléphone', '...', 'Catégories'])  # Adaptez les noms de colonnes à vos modèles
+
+    # Exportation des données de chaque modèle
+    for model, fields in [
+        (Membre, ['nom', 'email', 'telephone', 'Categorie']),  # Spécifiez les champs à exporter pour chaque modèle
+        (Sponsor, ['nom', 'email', 'telephone', 'montant_contribution']),
+        (Equipe, ['nom', 'categorie', 'entraineur', 'membres', 'sponsors']),
+        (Tournoi, ['nom', 'date_debut', 'date_fin', 'lieu', 'equipes', 'sponsors']),
+        (Match, ['date', 'equipe_domicile', 'equipe_exterieur', 'score_domicile', 'score_exterieur', 'tournois']),
+    ]:
+        for obj in model.objects.all():
+            row = [model.__name__, obj.id]  # Ajout du nom du modèle et de l'ID
+            for field in fields:
+                value = getattr(obj, field)
+
+                if isinstance(value, models.ManyToManyField):
+                    value = ", ".join([str(item) for item in value.all()])  # Gestion des champs ManyToMany
+                elif isinstance(value, models.ForeignKey):
+                    value = str(value) if value else ""  # Gestion des clés étrangères
+                row.append(value)
+            writer.writerow(row)
+
+    return response
+
+def importer_donnees_csv(request):
+    if request.method == 'POST':
+        form = ImportCSVForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = request.FILES['csv_file']
+            reader = csv.reader(csv_file.read().decode('utf-8').splitlines())
+            next(reader)  # Sauter la ligne d'en-tête
+
+            with transaction.atomic():
+                for row in reader:
+                    model_name = row[0]
+                    obj_id = row[1]
+                    model = None
+                    try:
+                        model = apps.get_model('club', model_name)
+                        if model is None:
+                            print(f"Le modèle '{model_name}' n'existe pas dans l'application 'club'.")
+                            continue
+
+                        try:
+                            obj = model.objects.get(pk=obj_id)
+                        except model.DoesNotExist:
+                            print(f"L'objet {model_name} avec l'ID {obj_id} n'existe pas dans la base de données")
+                            continue
+
+                        fields = [f.name for f in model._meta.get_fields() if f.name not in ['id']]
+
+                        for i, field in enumerate(fields):
+                            value = row[i + 2]
+                            model_field = model._meta.get_field(field)
+
+                            if isinstance(model_field, models.ManyToManyField):
+                                if field == 'emplacements':  # <-- Vérification cruciale du nom du champ
+                                    related_model = model_field.related_model
+                                    related_ids = value.split(',')
+
+                                    related_objects = []
+                                    for related_id in related_ids:
+                                        related_id = related_id.strip()
+
+                                        if related_id:
+                                            try:
+                                                related_obj = related_model.objects.get(pk=int(related_id))
+                                                related_objects.append(related_obj)
+                                            except related_model.DoesNotExist:
+                                                print(f"L'objet {related_model.__name__} avec l'ID {related_id} n'existe pas.")
+
+                                    getattr(obj, field).set(related_objects, clear=True) # clear=True pour remplacer les anciennes valeurs
+
+                                elif field == 'sponsors':  # Gestion du champ 'sponsors' dans Sponsor, Equipe et Tournoi
+                                    related_model = model_field.related_model
+                                    related_ids = value.split(',')
+                                    related_objects = []
+                                    for related_id in related_ids:
+                                        related_id = related_id.strip()
+                                        if related_id:
+                                            try:
+                                                related_obj = related_model.objects.get(pk=int(related_id))
+                                                related_objects.append(related_obj)
+                                            except related_model.DoesNotExist:
+                                                print(f"L'objet {related_model.__name__} avec l'ID {related_id} n'existe pas.")
+                                    getattr(obj, field).set(related_objects, clear=True)
+
+                                elif field == 'membres':  # Gestion du champ 'membres' dans Equipe
+                                    related_model = model_field.related_model
+                                    related_ids = value.split(',')
+                                    related_objects = []
+                                    for related_id in related_ids:
+                                        related_id = related_id.strip()
+                                        if related_id:
+                                            try:
+                                                related_obj = related_model.objects.get(pk=int(related_id))
+                                                related_objects.append(related_obj)
+                                            except related_model.DoesNotExist:
+                                                print(f"L'objet {related_model.__name__} avec l'ID {related_id} n'existe pas.")
+                                    getattr(obj, field).set(related_objects, clear=True)
+
+                                elif field == 'equipes':  # Gestion du champ 'equipes' dans Tournoi
+                                    related_model = model_field.related_model
+                                    related_ids = value.split(',')
+                                    related_objects = []
+                                    for related_id in related_ids:
+                                        related_id = related_id.strip()
+                                        if related_id:
+                                            try:
+                                                related_obj = related_model.objects.get(pk=int(related_id))
+                                                related_objects.append(related_obj)
+                                            except related_model.DoesNotExist:
+                                                print(f"L'objet {related_model.__name__} avec l'ID {related_id} n'existe pas.")
+                                    getattr(obj, field).set(related_objects, clear=True)
+
+                                elif field == 'Categorie':  # Gestion du champ 'Categorie' dans Membre
+                                    related_model = model_field.related_model
+                                    related_ids = value.split(',')
+                                    related_objects = []
+                                    for related_id in related_ids:
+                                        related_id = related_id.strip()
+                                        if related_id:
+                                            try:
+                                                related_obj = related_model.objects.get(pk=int(related_id))
+                                                related_objects.append(related_obj)
+                                            except related_model.DoesNotExist:
+                                                print(f"L'objet {related_model.__name__} avec l'ID {related_id} n'existe pas.")
+                                    getattr(obj, field).set(related_objects, clear=True)
+
+                            elif isinstance(model_field, models.ForeignKey):
+                                if value:
+                                    try:
+                                        related_model = model_field.related_model
+                                        related_obj = related_model.objects.get(pk=int(value))
+                                        setattr(obj, field, related_obj)
+                                    except related_model.DoesNotExist:
+                                        print(f"L'objet {related_model.__name__} avec l'ID {value} n'existe pas.")
+                                else:
+                                    setattr(obj, field, None)
+
+                            elif isinstance(model_field, models.DateField):
+                                if value:
+                                    try:
+                                        setattr(obj, field, datetime.strptime(value, "%Y-%m-%d").date())
+                                    except ValueError:
+                                        print(f"Erreur de format de date pour le champ {field} : {value}. Format attendu : YYYY-MM-DD")
+                                else:
+                                    setattr(obj, field, None)
+
+                            else:
+                                setattr(obj, field, value)
+
+                        obj.save()
+                        print(f"Objet {model_name} avec ID {obj_id} importé.")
+
+                    except LookupError:
+                        print(f"Le modèle '{model_name}' n'existe pas ou l'application 'club' est incorrecte.")
+                        continue
+
+                    except Exception as e:
+                        print(f"Erreur lors de l'importation de l'objet {model_name} avec ID {obj_id} : {e}")
+                        # ... (gestion des exceptions)
+
+            return redirect('liste_membres')  # Remplacez 'liste_membres'
+
+    else:
+        form = ImportCSVForm()
+    return render(request, 'importer_donnees.html', {'form': form})  # Remplacez 'importer_donnees.html'
 
 def ajouter_support(request):
     if request.method == 'POST':
@@ -341,7 +606,8 @@ def supprimer_membre(request, pk):
 
 def detail_membre(request, pk):
     membre = get_object_or_404(Membre, pk=pk)
-    return render(request, 'membres/detail_membre.html', {'membre': membre})
+    categories = membre.Categorie.all()  # Récupérer toutes les catégories du membre
+    return render(request, 'membres/detail_membre.html', {'membre': membre, 'categories': categories})
 # Vues pour les Equipes
 
 def liste_equipes(request):

@@ -3,32 +3,66 @@
 {% block content %}
     <h1>Liste des sponsors</h1>
     <a href="{% url 'importer_sponsors' %}">Importer un fichier CSV</a>
-    <table>
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Logo</th>
-                <th>Coût total des emplacements</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in sponsors_avec_cout_total %}
+    <a href="?actif=oui">Sponsors actifs</a> | <a href="?actif=non">Sponsors inactifs</a> | <a href="?actif=all">tous</a>
+    <form id="deleteForm" method="post" action="{% url 'supprimer_sponsors' %}">
+        {% csrf_token %}
+        <table>
+            <thead>
                 <tr>
-                    <td><a href="{% url 'detail_sponsor' item.sponsor.id %}">{{ item.sponsor.nom }}</a></td>
-                    <td>
-                        {% if item.sponsor.logo %}
-                            <img src="{{ item.sponsor.logo.url }}" alt="Logo {{ item.sponsor.nom }}" width="50">
-                        {% endif %}
-                    </td>
-                    <td>{{ item.cout_total }} €</td>
-                    <td>
-                        <a href="{% url 'modifier_sponsor' item.sponsor.id %}">Modifier</a>
-                        <a href="{% url 'supprimer_sponsor' item.sponsor.id %}">Supprimer</a>
-                    </td>
+                    <th><input type="checkbox" id="selectAll"></th>
+                    <th>Nom</th>
+                    <th>Logo</th>
+                    <th>Coût total des emplacements</th>
+                    <th>Actions</th>
+                    <th>Actif</th>
+                    <th>contact mail</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for sponsor in sponsors %}  <tr>
+                        <td><input type="checkbox" name="selected_items" value="{{ sponsor.id }}"></td>
+                        <td><a href="{% url 'detail_sponsor' sponsor.id %}">{{ sponsor.nom }}</a></td>
+                        <td>
+                            {% if sponsor.logo %}
+                                <img src="{{ sponsor.logo.url }}" alt="Logo {{ sponsor.nom }}" width="50">
+                            {% endif %}
+                        </td>
+                        <td>{% if sponsor.cout_total %}
+                                {{ sponsor.cout_total }} €
+                            {% else %}
+                                0 €  {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'modifier_sponsor' sponsor.id %}">Modifier</a>
+                            <a href="{% url 'supprimer_sponsor' sponsor.id %}">Supprimer</a>
+                        </td>
+                        <td>
+                            {% if sponsor.actif %}
+                                Oui
+                            {% else %}
+                                Non
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ sponsor.email }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">Supprimer les éléments sélectionnés</button>
+    </form>
+<script>
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('input[name="selected_items"]');
+
+    if (selectAll && checkboxes) { // Vérifier si les éléments existent
+        selectAll.addEventListener('change', () => {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        });
+    }
+</script>
     <a href="{% url 'ajouter_sponsor' %}">Ajouter un sponsor</a>
 {% endblock %}

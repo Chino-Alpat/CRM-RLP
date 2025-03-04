@@ -4,13 +4,17 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
 
+
+    path('exporter_csv/', views.exporter_donnees_csv, name='exporter_donnees_csv'),
+    path('importer_csv/', views.importer_donnees_csv, name='importer_donnees_csv'),
     # URL pour les Sponsors
     path('sponsors/', views.liste_sponsors, name='liste_sponsors'),
     path('sponsors/ajouter/', views.ajouter_sponsor, name='ajouter_sponsor'),
-    path('sponsors/<int:pk>/modifier/', views.modifier_sponsor, name='modifier_sponsor'),
+    path('sponsors/<int:sponsor_id>/modifier/', views.modifier_sponsor, name='modifier_sponsor'),
     path('sponsors/<int:pk>/supprimer/', views.supprimer_sponsor, name='supprimer_sponsor'),
     path('sponsors/<int:pk>/', views.detail_sponsor, name='detail_sponsor'),
     path('sponsors/importer_sponsors/', views.importer_csv_sponsors, name='importer_sponsors'),
+    path('sponsors/supprimer', views.supprimer_sponsors, name='supprimer_sponsors'),
 
     # URL pour les Membres
     path('membres/', views.liste_membres, name='liste_membres'),
@@ -22,6 +26,7 @@ urlpatterns = [
     path('membres/inscription/', views.inscription, name='inscription'),
     path('membre/<int:pk>/', views.detail_membre, name='detail_membre'),
     path('membres/importer_membres/', views.importer_xlsx_membres, name='importer_membres'),
+    path('membres/supprimer', views.supprimer_membres, name='supprimer_membres'),
 
     # URL pour les Équipes
     path('equipes/', views.liste_equipes, name='liste_equipes'),
@@ -50,6 +55,7 @@ urlpatterns = [
 
     # URL pour les Emplacements
     path('emplacements/', views.liste_emplacements, name='liste_emplacements'),
+    path('emplacements/<int:support_id>/', views.emplacements_par_support, name='emplacements_par_support'),
     path('emplacements/ajouter/', views.ajouter_emplacement, name='ajouter_emplacement'),
     path('emplacements/<int:pk>/modifier/', views.modifier_emplacement, name='modifier_emplacement'),
     path('emplacements/<int:pk>/supprimer/', views.supprimer_emplacement, name='supprimer_emplacement'),

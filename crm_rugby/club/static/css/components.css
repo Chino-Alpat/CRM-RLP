@@ -32,12 +32,12 @@
 
 /* Style pour les formulaires */
 form {
-    max-width: 600px; /* Largeur maximale du formulaire */
+    max-width: 1200px; /* Largeur maximale du formulaire */
     margin: 0 auto; /* Centrer le formulaire */
     padding: 20px;
     border: 1px solid #ddd; /* Bordure discrète */
     border-radius: 8px; /* Bords arrondis */
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Ombre légère */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Ombre légère */
     background-color: white;
 }
 
